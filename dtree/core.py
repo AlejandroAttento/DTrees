@@ -189,10 +189,6 @@ class DecisionTree:
             "    classDef chance fill:#f28e2c,stroke:#d4751a,stroke-width:3px,color:#ffffff,font-weight:bold,font-size:12px",
             # Terminal nodes - Green theme
             "    classDef terminal fill:#59a14f,stroke:#3f7a37,stroke-width:3px,color:#ffffff,font-weight:bold,font-size:12px",
-            # Alternative modern color scheme (uncomment to use):
-            # "    classDef decision fill:#1f77b4,stroke:#0d5a8a,stroke-width:3px,color:#ffffff,font-weight:bold",
-            # "    classDef chance fill:#ff7f0e,stroke:#cc5500,stroke-width:3px,color:#ffffff,font-weight:bold", 
-            # "    classDef terminal fill:#2ca02c,stroke:#1f7a1f,stroke-width:3px,color:#ffffff,font-weight:bold"
         ])
         
         # Add nodes with enhanced styling
@@ -269,4 +265,4 @@ class DecisionTree:
 
         mermaid = Mermaid(mermaid_code)
 
-        mermaid.to_png("diagram.png")
+        mermaid.to_png(filename)
