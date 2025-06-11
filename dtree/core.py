@@ -117,13 +117,14 @@ class DecisionTree:
                     print(f"    -> {child_name} ({child_id}) [p={prob:.{precision}f}]")
             print()
             
-    def get_optimal_path(self, start_node: str, precision: int = 2) -> List[str]:
+    def get_optimal_path(self, start_node: str, precision: int = 2, maximize: bool = True) -> List[str]:
         """
         Get the optimal path from a starting node (for decision nodes)
         
         Args:
             start_node: Starting node ID
             precision: Number of decimal places for calculations
+            maximize: If True, maximize expected value; if False, minimize expected value
             
         Returns:
             List of node IDs representing the optimal path
@@ -140,15 +141,20 @@ class DecisionTree:
                 break
                 
             if node.node_type == NodeType.DECISION:
-                # Choose child with maximum expected value
+                # Choose child with optimal expected value based on maximize parameter
                 best_child = None
-                best_value = float('-inf')
+                best_value = float('-inf') if maximize else float('inf')
                 
                 for child_id, _ in children:
                     child_value = expected_values[child_id]
-                    if child_value > best_value:
-                        best_value = child_value
-                        best_child = child_id
+                    if maximize:
+                        if child_value > best_value:
+                            best_value = child_value
+                            best_child = child_id
+                    else:
+                        if child_value < best_value:
+                            best_value = child_value
+                            best_child = child_id
                         
                 current = best_child
                 path.append(current)
