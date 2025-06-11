@@ -1,11 +1,89 @@
+import math
 from typing import Dict, List, Tuple
 from .models import Node, Edge, NodeType
 from mermaid import Mermaid
 
 class DecisionTree:
-    def __init__(self):
+    def __init__(self, display_precision: int = None):
+        """
+        Initialize a Decision Tree
+        
+        Args:
+            display_precision: Fixed precision for display purposes. If None, will use automatic precision based on significant digits.
+        """
         self.nodes: Dict[str, Node] = {}
         self.edges: List[Edge] = []
+        self.display_precision = display_precision
+        
+    def _calculate_significant_digits(self, value: float) -> int:
+        """
+        Calculate the number of significant digits needed for a value
+        
+        Args:
+            value: The numeric value to analyze
+            
+        Returns:
+            Number of decimal places needed to preserve significant digits
+        """
+        if value == 0:
+            return 2
+        
+        # Get the magnitude of the number
+        magnitude = math.floor(math.log10(abs(value)))
+        
+        # For values >= 1, use 2 decimal places minimum
+        if magnitude >= 0:
+            return max(2, 3 - magnitude)
+        
+        # For values < 1, use enough decimals to show significant digits
+        return abs(magnitude) + 2
+    
+    def _get_display_precision(self, values: List[float] = None) -> int:
+        """
+        Get the appropriate display precision
+        
+        Args:
+            values: List of values to analyze for automatic precision
+            
+        Returns:
+            Number of decimal places to use for display
+        """
+        if self.display_precision is not None:
+            return self.display_precision
+        
+        if values is None or len(values) == 0:
+            return 2
+        
+        # Calculate precision needed for all values
+        precisions = [self._calculate_significant_digits(v) for v in values if v != 0]
+        
+        if not precisions:
+            return 2
+        
+        # Use the maximum precision needed, but cap at 6 decimal places
+        return min(max(precisions), 6)
+    
+    def _format_probability_as_percentage(self, probability: float) -> str:
+        """
+        Format probability as percentage
+        
+        Args:
+            probability: Probability value (0.0 to 1.0)
+            
+        Returns:
+            Formatted percentage string
+        """
+        percentage = probability * 100
+        
+        # Use appropriate precision for percentages
+        if percentage == 100.0:
+            return "100%"
+        elif percentage >= 10:
+            return f"{percentage:.1f}%"
+        elif percentage >= 1:
+            return f"{percentage:.2f}%"
+        else:
+            return f"{percentage:.3f}%"
         
     def add_decision_node(self, node_id: str, name: str):
         """Add a decision node to the tree"""
@@ -36,15 +114,13 @@ class DecisionTree:
                 children.append((edge.to_node, edge.probability))
         return children
         
-    def calculate_expected_values(self, precision: int = 2) -> Dict[str, float]:
+    def calculate_expected_values(self) -> Dict[str, float]:
         """
         Calculate expected values for all nodes in the tree using backward induction
+        Internal calculations use full precision, no rounding applied
         
-        Args:
-            precision: Number of decimal places to round the results to
-            
         Returns:
-            Dictionary mapping node_id to expected value
+            Dictionary mapping node_id to expected value (full precision)
         """
         # Reset all expected values
         for node in self.nodes.values():
@@ -88,16 +164,26 @@ class DecisionTree:
         for node_id in self.nodes.keys():
             calculate_node_value(node_id)
             
-        # Return results rounded to specified precision
+        # Return results with full precision (no rounding)
         results = {}
         for node_id, node in self.nodes.items():
-            results[node_id] = round(node.expected_value, precision)
+            results[node_id] = node.expected_value
             
         return results
         
-    def print_tree_summary(self, precision: int = 2):
-        """Print a summary of the tree with expected values"""
-        expected_values = self.calculate_expected_values(precision)
+    def print_tree_summary(self):
+        """Print a summary of the tree with expected values using automatic precision"""
+        expected_values = self.calculate_expected_values()
+        
+        # Get all values for precision calculation
+        all_values = []
+        for node in self.nodes.values():
+            if node.node_type == NodeType.TERMINAL:
+                all_values.append(node.value)
+        all_values.extend(expected_values.values())
+        
+        # Get appropriate display precision
+        precision = self._get_display_precision(all_values)
         
         print("Decision Tree Summary:")
         print("=" * 50)
@@ -105,8 +191,8 @@ class DecisionTree:
         for node_id, node in self.nodes.items():
             print(f"{node.node_type.value.upper()}: {node.name} ({node_id})")
             if node.node_type == NodeType.TERMINAL:
-                print(f"  Terminal Value: ${node.value:.{precision}f}")
-            print(f"  Expected Value: ${expected_values[node_id]:.{precision}f}")
+                print(f"  Terminal Value: ${node.value:,.{precision}f}")
+            print(f"  Expected Value: ${expected_values[node_id]:,.{precision}f}")
             
             # Show children
             children = self.get_children(node_id)
@@ -114,22 +200,22 @@ class DecisionTree:
                 print("  Children:")
                 for child_id, prob in children:
                     child_name = self.nodes[child_id].name
-                    print(f"    -> {child_name} ({child_id}) [p={prob:.{precision}f}]")
+                    prob_str = self._format_probability_as_percentage(prob)
+                    print(f"    -> {child_name} ({child_id}) [{prob_str}]")
             print()
-            
-    def get_optimal_path(self, start_node: str, precision: int = 2, maximize: bool = True) -> List[str]:
+        
+    def get_optimal_path(self, start_node: str, maximize: bool = True) -> List[str]:
         """
         Get the optimal path from a starting node (for decision nodes)
         
         Args:
             start_node: Starting node ID
-            precision: Number of decimal places for calculations
             maximize: If True, maximize expected value; if False, minimize expected value
             
         Returns:
             List of node IDs representing the optimal path
         """
-        expected_values = self.calculate_expected_values(precision)
+        expected_values = self.calculate_expected_values()
         path = [start_node]
         current = start_node
         
@@ -170,19 +256,28 @@ class DecisionTree:
                 
         return path
 
-    def generate_mermaid_diagram(self, precision: int = 2, show_expected_values: bool = True) -> str:
+    def generate_mermaid_diagram(self, show_expected_values: bool = True) -> str:
         """
         Generate a modern Mermaid diagram representation of the decision tree
         
         Args:
-            precision: Number of decimal places for values
             show_expected_values: Whether to show expected values in nodes
             
         Returns:
             String containing the Mermaid diagram code
         """
         # Calculate expected values first
-        expected_values = self.calculate_expected_values(precision)
+        expected_values = self.calculate_expected_values()
+        
+        # Get all values for precision calculation
+        all_values = []
+        for node in self.nodes.values():
+            if node.node_type == NodeType.TERMINAL:
+                all_values.append(node.value)
+        all_values.extend(expected_values.values())
+        
+        # Get appropriate display precision
+        precision = self._get_display_precision(all_values)
         
         # Start with horizontal layout
         mermaid_code = ["graph LR"]
@@ -227,11 +322,12 @@ class DecisionTree:
         
         # Add edges with enhanced styling
         for edge in self.edges:
-            # Format probability label with better styling
+            # Format probability as percentage
             if edge.probability == 1.0:
                 prob_label = ""
             else:
-                prob_label = f"|<b>{edge.probability:.{precision}f}</b>|"
+                prob_str = self._format_probability_as_percentage(edge.probability)
+                prob_label = f"|<b>{prob_str}</b>|"
             
             # Use thicker arrows for better visibility
             mermaid_code.append(f"    {edge.from_node} ==>{prob_label} {edge.to_node}")
@@ -244,16 +340,15 @@ class DecisionTree:
         
         return "\n".join(mermaid_code)
     
-    def save_mermaid_diagram(self, filename: str = "decision_tree.md", precision: int = 2, show_expected_values: bool = True):
+    def save_mermaid_diagram(self, filename: str = "decision_tree.md", show_expected_values: bool = True):
         """
         Save the Mermaid diagram to a markdown file
         
         Args:
             filename: Output filename (should end with .md)
-            precision: Number of decimal places for values
             show_expected_values: Whether to show expected values in nodes
         """
-        mermaid_code = self.generate_mermaid_diagram(precision, show_expected_values)
+        mermaid_code = self.generate_mermaid_diagram(show_expected_values)
         
         markdown_content = f"""
 ```mermaid
@@ -266,8 +361,15 @@ class DecisionTree:
         
         print(f"Mermaid diagram saved to {filename}")
 
-    def save_mermaid_graph(self, filename: str = "decision_tree.png", precision: int = 2, show_expected_values: bool = True):
-        mermaid_code = self.generate_mermaid_diagram(precision, show_expected_values)
+    def save_mermaid_graph(self, filename: str = "decision_tree.png", show_expected_values: bool = True):
+        """
+        Save the Mermaid diagram as a PNG image
+        
+        Args:
+            filename: Output filename (should end with .png)
+            show_expected_values: Whether to show expected values in nodes
+        """
+        mermaid_code = self.generate_mermaid_diagram(show_expected_values)
 
         mermaid = Mermaid(mermaid_code)
 
