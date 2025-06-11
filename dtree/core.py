@@ -1,5 +1,6 @@
 from typing import Dict, List, Tuple
 from .models import Node, Edge, NodeType
+from mermaid import Mermaid
 
 class DecisionTree:
     def __init__(self):
