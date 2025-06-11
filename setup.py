@@ -29,7 +29,7 @@ setup(
     ],
     python_requires=">=3.7",
     install_requires=[
-        "mermaid-py>=0.1.0",
+        "mermaid-py>=0.8.0",
     ],
     extras_require={
         "dev": [

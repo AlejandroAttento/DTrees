@@ -242,8 +242,7 @@ class DecisionTree:
         
         return "\n".join(mermaid_code)
     
-    def save_mermaid_diagram(self, filename: str = "decision_tree.md", precision: int = 2, 
-                           show_expected_values: bool = True):
+    def save_mermaid_diagram(self, filename: str = "decision_tree.md", precision: int = 2, show_expected_values: bool = True):
         """
         Save the Mermaid diagram to a markdown file
         
@@ -265,8 +264,7 @@ class DecisionTree:
         
         print(f"Mermaid diagram saved to {filename}")
 
-    def save_mermaid_graph(self, filename: str = "decision_tree.png", precision: int = 2, 
-                           show_expected_values: bool = True):
+    def save_mermaid_graph(self, filename: str = "decision_tree.png", precision: int = 2, show_expected_values: bool = True):
         mermaid_code = self.generate_mermaid_diagram(precision, show_expected_values)
 
         mermaid = Mermaid(mermaid_code)
