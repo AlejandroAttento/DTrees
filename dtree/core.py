@@ -191,8 +191,8 @@ class DecisionTree:
         for node_id, node in self.nodes.items():
             print(f"{node.node_type.value.upper()}: {node.name} ({node_id})")
             if node.node_type == NodeType.TERMINAL:
-                print(f"  Terminal Value: ${node.value:,.{precision}f}")
-            print(f"  Expected Value: ${expected_values[node_id]:,.{precision}f}")
+                print(f"  Terminal Value: {node.value:,.{precision}f}")
+            print(f"  Expected Value: {expected_values[node_id]:,.{precision}f}")
             
             # Show children
             children = self.get_children(node_id)
