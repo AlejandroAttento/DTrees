@@ -130,13 +130,14 @@ class DecisionTree:
                 children.append((edge.to_node, edge.probability))
         return children
         
-    def calculate_expected_values(self) -> Dict[str, float]:
+    def calculate_expected_values(self) -> Dict[str, float] | Dict[str, Dict[str, float]]:
         """
         Calculate expected values for all nodes in the tree using backward induction
         Internal calculations use full precision, no rounding applied
         
         Returns:
-            Dictionary mapping node_id to expected value (full precision)
+            If no utility function: Dictionary mapping node_id to expected value
+            If utility function present: Dictionary mapping node_id to dict with 'expected_value' and 'utility_value'
         """
         # Reset all expected values
         for node in self.nodes.values():
@@ -180,11 +181,14 @@ class DecisionTree:
         for node_id in self.nodes.keys():
             calculate_node_value(node_id)
             
-        # Apply utility function to all expected values if one is defined
+        # Return results based on whether utility function is present
         results = {}
         for node_id, node in self.nodes.items():
             if self.utility_function is not None:
-                results[node_id] = self._apply_utility_function(node.expected_value)
+                results[node_id] = {
+                    'expected_value': node.expected_value,
+                    'utility_value': self._apply_utility_function(node.expected_value)
+                }
             else:
                 results[node_id] = node.expected_value
             
@@ -259,7 +263,9 @@ class DecisionTree:
                 all_values.append(node.value)
         all_values.extend(raw_expected_values.values())
         if self.utility_function is not None:
-            all_values.extend(expected_values.values())
+            # Extract utility values for precision calculation
+            utility_values = [v['utility_value'] for v in expected_values.values() if isinstance(v, dict)]
+            all_values.extend(utility_values)
         
         # Get appropriate display precision
         precision = self._get_display_precision(all_values)
@@ -271,13 +277,22 @@ class DecisionTree:
             print(f"{node.node_type.value.upper()}: {node.name} ({node_id})")
             if node.node_type == NodeType.TERMINAL:
                 print(f"  Terminal Value: {node.value:,.{precision}f}")
-            
-            # Show expected values
-            if self.utility_function is not None:
-                print(f"  Utility Value: {expected_values[node_id]:,.{precision}f}")
-                print(f"  Expected Value: ({raw_expected_values[node_id]:,.{precision}f})")
+                if self.utility_function is not None:
+                    utility_val = expected_values[node_id]['utility_value']
+                    raw_ev = expected_values[node_id]['expected_value']
+                    print(f"  Utility Value: {utility_val:,.{precision}f}")
+                    print(f"  Expected Value: {raw_ev:,.{precision}f}")
+                else:
+                    print(f"  Expected Value: {expected_values[node_id]:,.{precision}f}")
             else:
-                print(f"  Expected Value: {expected_values[node_id]:,.{precision}f}")
+                # Show expected values for non-terminal nodes
+                if self.utility_function is not None:
+                    utility_val = expected_values[node_id]['utility_value']
+                    raw_ev = expected_values[node_id]['expected_value']
+                    print(f"  Utility Value: {utility_val:,.{precision}f}")
+                    print(f"  Expected Value: {raw_ev:,.{precision}f}")
+                else:
+                    print(f"  Expected Value: {expected_values[node_id]:,.{precision}f}")
             
             # Show children
             children = self.get_children(node_id)
@@ -302,9 +317,12 @@ class DecisionTree:
         """
         # Use utility values for decision making if utility function is present
         if self.utility_function is not None:
-            expected_values = self.calculate_expected_values()  # This returns utility values
+            expected_values = self.calculate_expected_values()  # This returns dict with both values
+            # Extract utility values for decision making
+            decision_values = {node_id: values['utility_value'] if isinstance(values, dict) else values 
+                             for node_id, values in expected_values.items()}
         else:
-            expected_values = self.calculate_raw_expected_values()  # This returns raw expected values
+            decision_values = self.calculate_raw_expected_values()  # This returns raw expected values
             
         path = [start_node]
         current = start_node
@@ -322,7 +340,7 @@ class DecisionTree:
                 best_value = float('-inf') if maximize else float('inf')
                 
                 for child_id, _ in children:
-                    child_value = expected_values[child_id]
+                    child_value = decision_values[child_id]
                     if maximize:
                         if child_value > best_value:
                             best_value = child_value
@@ -367,7 +385,9 @@ class DecisionTree:
                 all_values.append(node.value)
         all_values.extend(raw_expected_values.values())
         if self.utility_function is not None:
-            all_values.extend(expected_values.values())
+            # Extract utility values for precision calculation
+            utility_values = [v['utility_value'] for v in expected_values.values() if isinstance(v, dict)]
+            all_values.extend(utility_values)
         
         # Get appropriate display precision
         precision = self._get_display_precision(all_values)
@@ -391,12 +411,19 @@ class DecisionTree:
             
             # Add values to label with better formatting
             if node.node_type == NodeType.TERMINAL:
-                label_parts.append(f"Value: {node.value:,.{precision}f}")
-            
-            if show_expected_values and node_id in expected_values and node.node_type != NodeType.TERMINAL:
                 if self.utility_function is not None:
-                    label_parts.append(f"U: {expected_values[node_id]:,.{precision}f}")
-                    label_parts.append(f"EV: ({raw_expected_values[node_id]:,.{precision}f})")
+                    utility_val = expected_values[node_id]['utility_value']
+                    raw_ev = expected_values[node_id]['expected_value']
+                    label_parts.append(f"U: {utility_val:,.{precision}f}")
+                    label_parts.append(f"EV: {raw_ev:,.{precision}f}")
+                else:
+                    label_parts.append(f"EV: {node.value:,.{precision}f}")
+            elif show_expected_values and node_id in expected_values:
+                if self.utility_function is not None:
+                    utility_val = expected_values[node_id]['utility_value']
+                    raw_ev = expected_values[node_id]['expected_value']
+                    label_parts.append(f"U: {utility_val:,.{precision}f}")
+                    label_parts.append(f"EV: {raw_ev:,.{precision}f}")
                 else:
                     label_parts.append(f"EV: {expected_values[node_id]:,.{precision}f}")
             
