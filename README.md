@@ -16,8 +16,10 @@ Forks are welcome, but reach out to me to discuss the updates.
 
 To install the library run 
 ```bash
-!pip install git+https://github.com/AlejandroAttento/DTrees
+!pip install dtrees-analyzer
 ```
+
+For more information about versions, changes, etc., visit the [project page](https://pypi.org/project/dtrees-analyzer/) on PyPI.
 
 ## Usage
 
