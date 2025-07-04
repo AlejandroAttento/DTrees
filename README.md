@@ -2,7 +2,7 @@
   <img src="./images/logo.png" width="500" alt="Logo">
 </div>
 
-# Decision Tree Analyzer
+# DTrees: Decision Tree Analyzer
 
 A Python package for creating, analyzing, and visualizing decision trees.
 
