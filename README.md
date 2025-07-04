@@ -271,7 +271,7 @@ The `get_optimal_path` allows you to get the optimal path based on a starting no
 dt.get_optimal_path("I")
 
 # Output
-# ['I', 'D', 'G', 'GD', 'NM']
+# ['I', 'D', 'G', 'GD', 'GM']
 ```
 
 The `get_children` method shows you all the child nodes based on a node ID you provide.
