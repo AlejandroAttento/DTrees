@@ -8,6 +8,13 @@ In case of questions or with ideas to improve the library, reach out to me at:
 
 Forks are welcome, but reach out to me to discuss the updates.
 
+# Install
+
+To install the library run 
+```bash
+!pip install git+https://github.com/AlejandroAttento/DTrees
+```
+
 ## Usage
 
 #### For the decision tree you only need to provide a utility function if one is used:
