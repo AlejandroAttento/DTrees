@@ -1,7 +1,11 @@
 import math
 from typing import Dict, List, Tuple, Callable, Optional
 from .models import Node, Edge, NodeType
-from mermaid import Mermaid
+# Optional mermaid import for diagram generation
+try:
+    from mermaid import Mermaid  # type: ignore
+except ImportError:  # pragma: no cover
+    Mermaid = None  # Fallback when mermaid is not installed
 
 class DecisionTree:
     def __init__(self, display_precision: int = None, utility_function: Optional[Callable[[float], float]] = None):
@@ -520,6 +524,13 @@ class DecisionTree:
             filename: Output filename (should end with .png)
             show_expected_values: Whether to show expected values in nodes
         """
+        if Mermaid is None:
+            raise ImportError(
+                "The 'mermaid' Python package is required for saving graphs as PNG."
+                " Install it via 'pip install mermaid' or use 'save_mermaid_diagram' to"
+                " export a markdown diagram instead."
+            )
+
         mermaid_code = self.generate_mermaid_diagram(show_expected_values)
 
         mermaid = Mermaid(mermaid_code)
