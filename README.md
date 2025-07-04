@@ -1,8 +1,12 @@
+<div align="center">
+  <img src="./images/logo.png" width="500" alt="Logo">
+</div>
+
 # Decision Tree Analyzer
 
 A Python package for creating, analyzing, and visualizing decision trees.
 
-In case of questions or with ideas to improve the library, reach out to me at:
+In case of questions or ideas to improve the library, reach out to me at:
 * [Email](alejandro@thebyte.guru)
 * [LinkedIn](https://www.linkedin.com/in/alejandro-daniel-attento/)
 
