@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="dtrees-analyzer",
-    version="0.1.0",
+    version="0.1.1",
     author="Alejandro Daniel Attento",
     author_email="alejandro@thebyte.guru",
     description="A Python package for creating, analyzing, and visualizing decision trees with expected value calculations",
