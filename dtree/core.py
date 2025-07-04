@@ -1,19 +1,35 @@
 import math
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Callable, Optional
 from .models import Node, Edge, NodeType
 from mermaid import Mermaid
 
 class DecisionTree:
-    def __init__(self, display_precision: int = None):
+    def __init__(self, display_precision: int = None, utility_function: Optional[Callable[[float], float]] = None):
         """
         Initialize a Decision Tree
         
         Args:
             display_precision: Fixed precision for display purposes. If None, will use automatic precision based on significant digits.
+            utility_function: Optional function to transform expected values. Should take a float and return a float.
         """
         self.nodes: Dict[str, Node] = {}
         self.edges: List[Edge] = []
         self.display_precision = display_precision
+        self.utility_function = utility_function
+        
+    def _apply_utility_function(self, value: float) -> float:
+        """
+        Apply utility function to a value if one is defined
+        
+        Args:
+            value: The value to transform
+            
+        Returns:
+            Transformed value or original value if no utility function
+        """
+        if self.utility_function is not None:
+            return self.utility_function(value)
+        return value
         
     def _calculate_significant_digits(self, value: float) -> int:
         """
@@ -164,7 +180,67 @@ class DecisionTree:
         for node_id in self.nodes.keys():
             calculate_node_value(node_id)
             
-        # Return results with full precision (no rounding)
+        # Apply utility function to all expected values if one is defined
+        results = {}
+        for node_id, node in self.nodes.items():
+            if self.utility_function is not None:
+                results[node_id] = self._apply_utility_function(node.expected_value)
+            else:
+                results[node_id] = node.expected_value
+            
+        return results
+        
+    def calculate_raw_expected_values(self) -> Dict[str, float]:
+        """
+        Calculate expected values for all nodes without applying utility function
+        This is used for display purposes to show both utility and raw expected values
+        
+        Returns:
+            Dictionary mapping node_id to raw expected value (without utility function)
+        """
+        # Reset all expected values
+        for node in self.nodes.values():
+            node.expected_value = None
+            
+        def calculate_node_value(node_id: str) -> float:
+            node = self.nodes[node_id]
+            
+            # Return cached value if already calculated
+            if node.expected_value is not None:
+                return node.expected_value
+                
+            if node.node_type == NodeType.TERMINAL:
+                node.expected_value = node.value
+                
+            elif node.node_type == NodeType.CHANCE:
+                children = self.get_children(node_id)
+                expected_value = 0.0
+                
+                for child_id, probability in children:
+                    child_value = calculate_node_value(child_id)
+                    expected_value += probability * child_value
+                    
+                node.expected_value = expected_value
+                
+            elif node.node_type == NodeType.DECISION:
+                children = self.get_children(node_id)
+                if not children:
+                    node.expected_value = 0.0
+                else:
+                    # For decision nodes, take the maximum expected value
+                    max_value = float('-inf')
+                    for child_id, _ in children:
+                        child_value = calculate_node_value(child_id)
+                        max_value = max(max_value, child_value)
+                    node.expected_value = max_value
+                    
+            return node.expected_value
+            
+        # Calculate expected values for all nodes
+        for node_id in self.nodes.keys():
+            calculate_node_value(node_id)
+            
+        # Return raw results without utility function
         results = {}
         for node_id, node in self.nodes.items():
             results[node_id] = node.expected_value
@@ -174,13 +250,16 @@ class DecisionTree:
     def print_tree_summary(self):
         """Print a summary of the tree with expected values using automatic precision"""
         expected_values = self.calculate_expected_values()
+        raw_expected_values = self.calculate_raw_expected_values()
         
         # Get all values for precision calculation
         all_values = []
         for node in self.nodes.values():
             if node.node_type == NodeType.TERMINAL:
                 all_values.append(node.value)
-        all_values.extend(expected_values.values())
+        all_values.extend(raw_expected_values.values())
+        if self.utility_function is not None:
+            all_values.extend(expected_values.values())
         
         # Get appropriate display precision
         precision = self._get_display_precision(all_values)
@@ -192,7 +271,13 @@ class DecisionTree:
             print(f"{node.node_type.value.upper()}: {node.name} ({node_id})")
             if node.node_type == NodeType.TERMINAL:
                 print(f"  Terminal Value: {node.value:,.{precision}f}")
-            print(f"  Expected Value: {expected_values[node_id]:,.{precision}f}")
+            
+            # Show expected values
+            if self.utility_function is not None:
+                print(f"  Utility Value: {expected_values[node_id]:,.{precision}f}")
+                print(f"  Expected Value: ({raw_expected_values[node_id]:,.{precision}f})")
+            else:
+                print(f"  Expected Value: {expected_values[node_id]:,.{precision}f}")
             
             # Show children
             children = self.get_children(node_id)
@@ -215,7 +300,12 @@ class DecisionTree:
         Returns:
             List of node IDs representing the optimal path
         """
-        expected_values = self.calculate_expected_values()
+        # Use utility values for decision making if utility function is present
+        if self.utility_function is not None:
+            expected_values = self.calculate_expected_values()  # This returns utility values
+        else:
+            expected_values = self.calculate_raw_expected_values()  # This returns raw expected values
+            
         path = [start_node]
         current = start_node
         
@@ -268,13 +358,16 @@ class DecisionTree:
         """
         # Calculate expected values first
         expected_values = self.calculate_expected_values()
+        raw_expected_values = self.calculate_raw_expected_values()
         
         # Get all values for precision calculation
         all_values = []
         for node in self.nodes.values():
             if node.node_type == NodeType.TERMINAL:
                 all_values.append(node.value)
-        all_values.extend(expected_values.values())
+        all_values.extend(raw_expected_values.values())
+        if self.utility_function is not None:
+            all_values.extend(expected_values.values())
         
         # Get appropriate display precision
         precision = self._get_display_precision(all_values)
@@ -301,7 +394,11 @@ class DecisionTree:
                 label_parts.append(f"Value: {node.value:,.{precision}f}")
             
             if show_expected_values and node_id in expected_values and node.node_type != NodeType.TERMINAL:
-                label_parts.append(f"EV: {expected_values[node_id]:,.{precision}f}")
+                if self.utility_function is not None:
+                    label_parts.append(f"U: {expected_values[node_id]:,.{precision}f}")
+                    label_parts.append(f"EV: ({raw_expected_values[node_id]:,.{precision}f})")
+                else:
+                    label_parts.append(f"EV: {expected_values[node_id]:,.{precision}f}")
             
             # Create label with line breaks
             label = "<br/>".join(label_parts)
