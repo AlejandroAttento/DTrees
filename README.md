@@ -195,7 +195,7 @@ dt.add_edge("GD", "GM", 0.6)
 
 #### To analyze the decision tree you can:
 
-Create a mermaid graph using `calculate_expected_values`.
+Create a mermaid graph using `save_mermaid_graph`.
 ```python
 dt.save_mermaid_graph("./images/case_with_utility_func.png")
 ```
