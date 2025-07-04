@@ -157,7 +157,7 @@ dt.save_mermaid_graph("./images/case_without_utility_func.png")
 ### With Utility Function
 
 The utility function is:
-## $u = \sqrt[3]{x}$
+## $u(x) = \sqrt[3]{x}$
 
 ```python
 import numpy as np
