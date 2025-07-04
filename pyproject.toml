@@ -31,6 +31,7 @@ requires-python = ">=3.10"
 dependencies = [
     "numpy>=1.20.0",
     "mermaid-py>=0.8.0",
+    "mermaid-cli>=0.1.0",
 ]
 
 [project.optional-dependencies]
@@ -43,4 +44,8 @@ dev = [
 [project.urls]
 Homepage = "https://github.com/AlejandroAttento/DTrees"
 Repository = "https://github.com/AlejandroAttento/DTrees"
-Issues = "https://github.com/AlejandroAttento/DTrees/issues" 
+Issues = "https://github.com/AlejandroAttento/DTrees/issues"
+
+[tool.setuptools]
+include-package-data = true
+zip-safe = false 
