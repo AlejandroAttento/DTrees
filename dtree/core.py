@@ -354,9 +354,22 @@ class DecisionTree:
                 path.append(current)
                 
             elif node.node_type == NodeType.CHANCE:
-                # For chance nodes, show the path but note it's probabilistic
-                # Just take the first child for path demonstration
-                current = children[0][0]
+                # For chance nodes, also choose the optimal child based on expected values
+                best_child = None
+                best_value = float('-inf') if maximize else float('inf')
+                
+                for child_id, _ in children:
+                    child_value = decision_values[child_id]
+                    if maximize:
+                        if child_value > best_value:
+                            best_value = child_value
+                            best_child = child_id
+                    else:
+                        if child_value < best_value:
+                            best_value = child_value
+                            best_child = child_id
+                        
+                current = best_child
                 path.append(current)
                 
             else:  # Terminal
@@ -391,6 +404,12 @@ class DecisionTree:
         
         # Get appropriate display precision
         precision = self._get_display_precision(all_values)
+        
+        # Compute the optimal path (as a set of edges)
+        optimal_path_nodes = self.get_optimal_path(next(iter(self.nodes)))
+        optimal_path_edges = set()
+        for i in range(len(optimal_path_nodes) - 1):
+            optimal_path_edges.add((optimal_path_nodes[i], optimal_path_nodes[i+1]))
         
         # Start with horizontal layout
         mermaid_code = ["graph LR"]
@@ -445,6 +464,8 @@ class DecisionTree:
                 mermaid_code.append(f"    class {node_id} terminal")
         
         # Add edges with enhanced styling
+        link_styles = []
+        edge_count = 0
         for edge in self.edges:
             # Format probability as percentage
             if edge.probability == 1.0:
@@ -453,14 +474,20 @@ class DecisionTree:
                 prob_str = self._format_probability_as_percentage(edge.probability)
                 prob_label = f"|<b>{prob_str}</b>|"
             
-            # Use thicker arrows for better visibility
-            mermaid_code.append(f"    {edge.from_node} ==>{prob_label} {edge.to_node}")
+            edge_str = f"    {edge.from_node} ==>{prob_label} {edge.to_node}"
+            mermaid_code.append(edge_str)
+            # If this edge is in the optimal path, add a custom linkStyle
+            if (edge.from_node, edge.to_node) in optimal_path_edges:
+                link_styles.append(f"    linkStyle {edge_count} stroke:#e15759,stroke-width:5px;")
+            edge_count += 1
         
         # Add overall styling
         mermaid_code.extend([
             "    linkStyle default stroke:#666,stroke-width:2px",
             "    %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#ffffff', 'primaryTextColor':'#333333', 'primaryBorderColor':'#dddddd', 'lineColor':'#666666'}}}%%"
         ])
+        # Add custom link styles for optimal path
+        mermaid_code.extend(link_styles)
         
         return "\n".join(mermaid_code)
     

@@ -117,7 +117,7 @@ Company engineers estimate a 30% chance of finding gas. Meanwhile, the company's
 
 What decision should Newox make to maximize its expected profits?
 
-This example demonstrates a complex decision tree for a land investment scenario, both with and without a utility function.
+*This example demonstrates a more complex decision tree for a land investment scenario, both with and without a utility function.*
 
 ### Without Utility Function
 
@@ -195,7 +195,8 @@ dt.add_edge("GD", "GM", 0.6)
 
 #### To analyze the decision tree you can:
 
-Create a mermaid graph using `save_mermaid_graph`.
+Create a mermaid graph using `save_mermaid_graph`.  
+*The thicker line shows the optimal path. This is useful to understand, at each decision node, which would be the best path given the quantified information.*
 ```python
 dt.save_mermaid_graph("./images/case_with_utility_func.png")
 ```
@@ -238,6 +239,10 @@ dt.save_mermaid_diagram("./images/case_with_utility_func.md")
 #     GD ==>|<b>60.0%</b>| GM
 #     linkStyle default stroke:#666,stroke-width:2px
 #     %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#ffffff', 'primaryTextColor':'#333333', 'primaryBorderColor':'#dddddd', 'lineColor':'#666666'}}}%%
+#     linkStyle 1 stroke:#e15759,stroke-width:5px;
+#     linkStyle 2 stroke:#e15759,stroke-width:5px;
+#     linkStyle 4 stroke:#e15759,stroke-width:5px;
+#     linkStyle 7 stroke:#e15759,stroke-width:5px;
 ```
 
 The `calculate_expected_values` method allows you to get all the values as a dictionary.

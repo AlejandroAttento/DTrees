@@ -32,4 +32,8 @@ graph LR
     GD ==>|<b>60.0%</b>| GM
     linkStyle default stroke:#666,stroke-width:2px
     %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#ffffff', 'primaryTextColor':'#333333', 'primaryBorderColor':'#dddddd', 'lineColor':'#666666'}}}%%
+    linkStyle 1 stroke:#e15759,stroke-width:5px;
+    linkStyle 2 stroke:#e15759,stroke-width:5px;
+    linkStyle 4 stroke:#e15759,stroke-width:5px;
+    linkStyle 7 stroke:#e15759,stroke-width:5px;
 ```
