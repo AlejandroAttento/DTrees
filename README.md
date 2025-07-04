@@ -191,39 +191,42 @@ dt.save_mermaid_graph("./images/case_with_utility_func.png")
 ![Case with utility function](./images/case_with_utility_func.png)
 
 Create a markdown representation of the mermaid graph using `save_mermaid_diagram`. So, you can customize the graph using services as [Mermaid.live](https://mermaid.live/).
-```
-graph LR
-    classDef decision fill:#4e79a7,stroke:#2c5f85,stroke-width:3px,color:#ffffff,font-weight:bold,font-size:12px
-    classDef chance fill:#f28e2c,stroke:#d4751a,stroke-width:3px,color:#ffffff,font-weight:bold,font-size:12px
-    classDef terminal fill:#59a14f,stroke:#3f7a37,stroke-width:3px,color:#ffffff,font-weight:bold,font-size:12px
-    I["<b>Decision</b><br/>U: 31.75<br/>EV: 32,000.00"]
-    class I decision
-    S["<b>Sell land</b><br/>U: 28.02<br/>EV: 22,000.00"]
-    class S terminal
-    D(["<b>Drill land</b><br/>U: 31.75<br/>EV: 32,000.00"])
-    class D chance
-    G["<b>Gas found</b><br/>U: 58.48<br/>EV: 200,000.00"]
-    class G decision
-    NG["<b>No gas found</b><br/>U: -34.20<br/>EV: -40,000.00"]
-    class NG terminal
-    GS["<b>Sell land to West Gas</b><br/>U: 54.29<br/>EV: 160,000.00"]
-    class GS terminal
-    GD(["<b>Develop the site</b><br/>U: 58.48<br/>EV: 200,000.00"])
-    class GD chance
-    NM["<b>Normal market conditions</b><br/>U: 47.91<br/>EV: 110,000.00"]
-    class NM terminal
-    GM["<b>Good market conditions</b><br/>U: 63.83<br/>EV: 260,000.00"]
-    class GM terminal
-    I ==> S
-    I ==> D
-    D ==>|<b>30.0%</b>| G
-    D ==>|<b>70.0%</b>| NG
-    G ==> GD
-    G ==> GS
-    GD ==>|<b>40.0%</b>| NM
-    GD ==>|<b>60.0%</b>| GM
-    linkStyle default stroke:#666,stroke-width:2px
-    %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#ffffff', 'primaryTextColor':'#333333', 'primaryBorderColor':'#dddddd', 'lineColor':'#666666'}}}%%
+```python
+dt.save_mermaid_diagram("./images/case_with_utility_func.md")
+
+# Output
+# graph LR
+#     classDef decision fill:#4e79a7,stroke:#2c5f85,stroke-width:3px,color:#ffffff,font-weight:bold,font-size:12px
+#     classDef chance fill:#f28e2c,stroke:#d4751a,stroke-width:3px,color:#ffffff,font-weight:bold,font-size:12px
+#     classDef terminal fill:#59a14f,stroke:#3f7a37,stroke-width:3px,color:#ffffff,font-weight:bold,font-size:12px
+#     I["<b>Decision</b><br/>U: 31.75<br/>EV: 32,000.00"]
+#     class I decision
+#     S["<b>Sell land</b><br/>U: 28.02<br/>EV: 22,000.00"]
+#     class S terminal
+#     D(["<b>Drill land</b><br/>U: 31.75<br/>EV: 32,000.00"])
+#     class D chance
+#     G["<b>Gas found</b><br/>U: 58.48<br/>EV: 200,000.00"]
+#     class G decision
+#     NG["<b>No gas found</b><br/>U: -34.20<br/>EV: -40,000.00"]
+#     class NG terminal
+#     GS["<b>Sell land to West Gas</b><br/>U: 54.29<br/>EV: 160,000.00"]
+#     class GS terminal
+#     GD(["<b>Develop the site</b><br/>U: 58.48<br/>EV: 200,000.00"])
+#     class GD chance
+#     NM["<b>Normal market conditions</b><br/>U: 47.91<br/>EV: 110,000.00"]
+#     class NM terminal
+#     GM["<b>Good market conditions</b><br/>U: 63.83<br/>EV: 260,000.00"]
+#     class GM terminal
+#     I ==> S
+#     I ==> D
+#     D ==>|<b>30.0%</b>| G
+#     D ==>|<b>70.0%</b>| NG
+#     G ==> GD
+#     G ==> GS
+#     GD ==>|<b>40.0%</b>| NM
+#     GD ==>|<b>60.0%</b>| GM
+#     linkStyle default stroke:#666,stroke-width:2px
+#     %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#ffffff', 'primaryTextColor':'#333333', 'primaryBorderColor':'#dddddd', 'lineColor':'#666666'}}}%%
 ```
 
 The `calculate_expected_values` method allows you to get all the values as a dictionary.
@@ -233,33 +236,33 @@ dt.calculate_expected_values()
 
 # Output
 # {
+#     'I': {'expected_value': 32000.0, 'utility_value': 31.74802103936399},
+#     'S': {'expected_value': 22000, 'utility_value': 28.02039330655387},
 #     'D': {'expected_value': 32000.0, 'utility_value': 31.74802103936399},
-#     'V': {'expected_value': 22000, 'utility_value': 28.02039330655387},
-#     'P': {'expected_value': 32000.0, 'utility_value': 31.74802103936399},
-#     'PE': {'expected_value': 200000.0, 'utility_value': 58.480354764257314},
-#     'PNE': {'expected_value': -40000, 'utility_value': -34.19951893353394},
-#     'PEV': {'expected_value': 160000, 'utility_value': 54.28835233189813},
-#     'PEE': {'expected_value': 200000.0, 'utility_value': 58.480354764257314},
-#     'PEEN': {'expected_value': 110000, 'utility_value': 47.91419857062784},
-#     'PEEF': {'expected_value': 260000, 'utility_value': 63.82504298859907}
+#     'G': {'expected_value': 200000.0, 'utility_value': 58.480354764257314},
+#     'NG': {'expected_value': -40000, 'utility_value': -34.19951893353394},
+#     'GS': {'expected_value': 160000, 'utility_value': 54.28835233189813},
+#     'GD': {'expected_value': 200000.0, 'utility_value': 58.480354764257314},
+#     'NM': {'expected_value': 110000, 'utility_value': 47.91419857062784},
+#     'GM': {'expected_value': 260000, 'utility_value': 63.82504298859907}
 # }
 ```
 
 The `get_optimal_path` allows you to get the optimal path based on a starting node.
 ```python
-dt.get_optimal_path()
+dt.get_optimal_path("I")
 
 # Output
-# ['D', 'P', 'PE', 'PEE', 'PEEN']
+# ['I', 'D', 'G', 'GD', 'NM']
 ```
 
 The `get_children` method shows you all the child nodes based on a node ID you provide.
 ```python
-dt.get_children("PEE")
+dt.get_children("GD")
 
 # Output
 # [
-#     ('PEEN', 0.4), 
-#     ('PEEF', 0.6)
+#     ('NM', 0.4), 
+#     ('GM', 0.6)
 # ]
 ```
