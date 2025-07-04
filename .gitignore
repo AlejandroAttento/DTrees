@@ -211,6 +211,10 @@ secrets.json
 *.pdf
 *.html
 *.md
+!case_with_utility_func.md
+!case_with_utility_func.png
+!case_without_utility_func.png
+!example.png
 !README.md
 !CHANGELOG.md
 !CONTRIBUTING.md
