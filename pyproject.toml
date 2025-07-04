@@ -3,7 +3,7 @@ requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "dtree"
+name = "dtrees-analyzer"
 version = "0.1.0"
 description = "A Python package for creating, analyzing, and visualizing decision trees with expected value calculations"
 readme = "README.md"

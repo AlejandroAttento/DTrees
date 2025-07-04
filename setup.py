@@ -4,7 +4,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="dtree",
+    name="dtrees-analyzer",
     version="0.1.0",
     author="Alejandro Daniel Attento",
     author_email="alejandro@thebyte.guru",
