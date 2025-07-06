@@ -67,24 +67,34 @@ class DecisionTree:
         """Get all children of a node with their probabilities"""
         return self.tree_structure.get_children(node_id)
         
-    def calculate_expected_values(self) -> Dict[str, float] | Dict[str, Dict[str, float]]:
+    def calculate_expected_values(self) -> Dict[str, dict]:
         """
-        Calculate expected values for all nodes in the tree using backward induction
-        
+        Calculate both expected value and expected utility for all nodes in the tree using backward induction.
+
         Returns:
-            If no utility function: Dictionary mapping node_id to expected value
-            If utility function present: Dictionary mapping node_id to dict with 'expected_value' and 'utility_value'
+            Dictionary mapping node_id to {'expected_value': ..., 'utility_value': ...}
         """
-        return self.calculator.calculate_expected_values(self.utility_function)
+        return self.calculate_both()
+
+    def calculate_both(self) -> Dict[str, dict]:
+        """
+        Calculate both expected value and expected utility for all nodes (if utility function is present).
+        Returns a dict mapping node_id to {'expected_value': ..., 'utility_value': ...}
+        """
+        if self.utility_function is not None:
+            return self.calculator.calculate_both(self.utility_function)
+        else:
+            # If no utility function, just return expected values as 'expected_value'
+            ev = self.calculator.calculate_expected_values()
+            return {k: {'expected_value': v, 'utility_value': v} for k, v in ev.items()}
         
     def calculate_raw_expected_values(self) -> Dict[str, float]:
         """
         Calculate expected values for all nodes without applying utility function
-        
         Returns:
             Dictionary mapping node_id to raw expected value (without utility function)
         """
-        return self.calculator.calculate_raw_expected_values()
+        return self.calculator.calculate_expected_values()
         
     def print_tree_summary(self) -> None:
         """Print a summary of the tree with expected values using automatic precision"""
@@ -115,7 +125,7 @@ class DecisionTree:
         Returns:
             String containing the Mermaid diagram code
         """
-        expected_values = self.calculate_expected_values()
+        expected_values = self.calculate_both()
         raw_expected_values = self.calculate_raw_expected_values()
         optimal_path_nodes = self.get_optimal_path(next(iter(self.tree_structure.nodes)))
         

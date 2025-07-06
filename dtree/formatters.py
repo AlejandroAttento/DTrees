@@ -94,7 +94,7 @@ class TreePrinter:
                     print(f"  Utility Value: {utility_val:,.{precision}f}")
                     print(f"  Expected Value: {raw_ev:,.{precision}f}")
                 else:
-                    print(f"  Expected Value: {expected_values[node_id]:,.{precision}f}")
+                    print(f"  Expected Value: {expected_values[node_id]['expected_value']:,.{precision}f}")
             else:
                 # Show expected values for non-terminal nodes
                 if utility_function is not None:
@@ -103,7 +103,7 @@ class TreePrinter:
                     print(f"  Utility Value: {utility_val:,.{precision}f}")
                     print(f"  Expected Value: {raw_ev:,.{precision}f}")
                 else:
-                    print(f"  Expected Value: {expected_values[node_id]:,.{precision}f}")
+                    print(f"  Expected Value: {expected_values[node_id]['expected_value']:,.{precision}f}")
             
             # Show children
             children = self.tree_structure.get_children(node_id)
@@ -170,7 +170,7 @@ class MermaidGenerator:
                     label_parts.append(f"U: {utility_val:,.{precision}f}")
                     label_parts.append(f"EV: {raw_ev:,.{precision}f}")
                 else:
-                    label_parts.append(f"EV: {node.value:,.{precision}f}")
+                    label_parts.append(f"EV: {expected_values[node_id]['expected_value']:,.{precision}f}")
             elif show_expected_values and node_id in expected_values:
                 if utility_function is not None:
                     utility_val = expected_values[node_id]['utility_value']
@@ -178,7 +178,7 @@ class MermaidGenerator:
                     label_parts.append(f"U: {utility_val:,.{precision}f}")
                     label_parts.append(f"EV: {raw_ev:,.{precision}f}")
                 else:
-                    label_parts.append(f"EV: {expected_values[node_id]:,.{precision}f}")
+                    label_parts.append(f"EV: {expected_values[node_id]['expected_value']:,.{precision}f}")
             
             # Create label with line breaks
             label = "<br/>".join(label_parts)
